@@ -8,18 +8,30 @@ const settings = {
         google: [],
         cohere: [],
         deepseek: [],
+        mistralai: [], // Keep MistralAI here
     },
     openai_model: undefined,
     claude_model: undefined,
     google_model: undefined,
     cohere_model: undefined,
+    deepseek_model: undefined,
+    mistralai_model: undefined,
 };
-Object.assign(settings, extension_settings.customModels ?? {});
-// fix if installed before google support was added
-if (!settings.provider.google) settings.provider.google = [];
-if (!settings.google_model) settings.google_model = undefined;
 
-// old popups, ancient ST
+// IMPORTANT:  Initialization after loading extension_settings
+Object.assign(settings, extension_settings.customModels ?? {});
+
+// Initialize ALL providers if they are missing
+for (const providerName of Object.keys(settings.provider)) {
+    if (!settings.provider[providerName]) {
+        settings.provider[providerName] = [];
+    }
+    if (settings[`${providerName}_model`] === undefined) {
+        settings[`${providerName}_model`] = undefined;
+    }
+}
+
+// ... (Rest of the code remains the same, from the "old popups" section) ...
 let popupCaller;
 let popupType;
 let popupResult;
@@ -40,7 +52,18 @@ try {
 
 for (const [provider, models] of Object.entries(settings.provider)) {
     const sel = /**@type {HTMLSelectElement}*/(document.querySelector(`#model_${provider}_select`));
+    // Robustness check:  Ensure the <select> element exists
+    if (!sel) {
+        console.error(`Could not find select element for provider: ${provider}`);
+        continue; // Skip to the next provider
+    }
+
     const h4 = sel.parentElement.querySelector('h4');
+      // Robustness check:  Ensure the <h4> element exists
+     if (!h4) {
+        console.error(`Could not find h4 element for provider: ${provider}`);
+        continue; // Skip to the next provider
+    }
     const btn = document.createElement('div'); {
         btn.classList.add('stcm--btn');
         btn.classList.add('menu_button');
