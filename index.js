@@ -6,10 +6,13 @@ const settings = {
         claude: [],
         openai: [],
         google: [],
+        cohere: [],
+        deepseek: [],
     },
     openai_model: undefined,
     claude_model: undefined,
     google_model: undefined,
+    cohere_model: undefined,
 };
 Object.assign(settings, extension_settings.customModels ?? {});
 // fix if installed before google support was added
